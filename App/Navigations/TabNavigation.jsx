@@ -3,7 +3,7 @@ import { Text } from "react-native";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from '../Screens/Home';
 import Explore from '../Screens/Explore';   
-import AddPost from '../Screens/AddPost';
+import AddProduct from '../Screens/AddProduct';
 import Profile from '../Screens/Profile';
 import { Ionicons } from "@expo/vector-icons";
 
@@ -35,7 +35,7 @@ export default function TabNavigation() {
           )
         }}
         />
-        <Tab.Screen name="addpost" component={AddPost}
+        <Tab.Screen name="addproduct" component={AddProduct}
         options={{
           tabBarLabel:({color})=>(
             <Text style={{color:color, fontSize:12, marginBottom:3}}>Adicionar</Text>
