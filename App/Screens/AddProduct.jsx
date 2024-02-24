@@ -1,25 +1,39 @@
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ToastAndroid, ActivityIndicator, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { app } from "../../firebaseConfig";
 import { Formik } from 'formik';
 import {Picker} from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import { getFirestore, getDocs, collection } from "firebase/firestore";
+import { getFirestore, getDocs, collection, addDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useUser } from '@clerk/clerk-expo';
 
 export default function AddProduct() {
 
+  //Seta a imagem do produto
   const [image, setImage] = useState(null);
+
+  //Inicializa o banco de dados e o storage
   const db = getFirestore(app);
+  const storage = getStorage();
+
+  //Inicializa o estado de loading
+  const [loading, setLoading] = useState(false);
+
+  //Pega o usuário logado
+  const {user } = useUser();
+  
+  //Inicializa as listas de categorias e unidades
   const [categoryList, setCategoryList] = useState( [] );
   const [unitList, setUnitList] = useState( [] );
 
+  //Carrega as listas de categorias e unidades
   useEffect(() => {
       getCategoryList();
-  }, [])
-
+  }, []);
   useEffect(() => {
       getUnitList();
-  }, [])
+  }, []);
 
   /**
   * Carrega a lista de categorias
@@ -66,15 +80,57 @@ export default function AddProduct() {
     }
   };
 
+  /**
+   * Método de submissão do formulário 
+   */
+  const onSubmitMethod = async (values) => {
+
+    setLoading(true);
+
+    //Converte Uri para Blob File
+    const response = await fetch(image);
+    const blob = await response.blob();
+    const storageRef = ref(storage, 'ProductPost/' + Date.now() + '.jpg');
+
+    //Faz o upload da imagem
+    uploadBytes(storageRef, blob).then((snapshot) => {
+      console.log('Uploaded a blob or file!');
+    }).then((response) => {
+
+      //Pega a URL da imagem e seta os valores da imagem e do usuário
+      getDownloadURL(storageRef).then( async (url) => {
+        values.image = url;
+        values.userName = user.fullName;
+        values.userEmail = user.primaryEmailAddress.emailAddress;
+        values.userImage = user.imageUrl;
+
+        //Adiciona o produto no banco de dados
+        const docRef = await addDoc(collection(db, "Product"), values);
+        if(docRef.id) {
+          setLoading(false);
+          Alert.alert("Sucesso!", "Produto adicionado com sucesso!!");
+        }
+      })
+    });
+  }
+
   return (
     <View className="p-10">
       <Text className="text-[20px] mt-6 font-bold text-[#3D3227]">Adicione um produto para venda:</Text>
       <Text className="text-[14px] mt-2 mb-4 text-[#3D3227]">É simples e rápido, preencha as informações do seu produto</Text>
       <Formik
-        initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:''}}
-        onSubmit={(values) => {console.log(values);}}
+        initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:'', userName: '', userEmail:'', userImage:''}}
+        onSubmit={(values) => onSubmitMethod(values)}
+        validate={(values) => {
+          const errors={}
+          if(!values.title) {
+            errors.name = 'Digite um título'
+            ToastAndroid.show("Digite um título", ToastAndroid.SHORT);
+          }
+          return errors;
+        }}
       >
-        {({handleChange, handleBlur, handleSubmit, values, setFieldValue}) => (
+        {({handleChange, handleBlur, handleSubmit, values, setFieldValue, errors}) => (
           <View className="mt-2">
             <TouchableOpacity onPress={pickImage}>
               {image?
@@ -132,8 +188,16 @@ export default function AddProduct() {
                 value={values?.address}
                 onChangeText={handleChange('address')}
               />
-            <TouchableOpacity className="p-4 bg-[#A9CA5B] rounded-lg mt-2 shadow-md" onPress={handleSubmit} >
-              <Text className="text-white text-center text-[18px]">Adicionar</Text>
+            <TouchableOpacity 
+              style={{backgroundColor: loading ? '#CCC' : '#A9CA5B'}}
+              disabled={loading}
+              className="p-4 rounded-lg mt-2 shadow-md" 
+              onPress={handleSubmit} >
+              {loading ? 
+                <ActivityIndicator size="small" color="#fff" />
+                :
+                <Text className="text-white text-center text-[18px]">Adicionar</Text>
+              }
             </TouchableOpacity>
           </View>
         )}
