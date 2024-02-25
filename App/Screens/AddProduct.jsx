@@ -1,4 +1,4 @@
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ToastAndroid, ActivityIndicator, Alert } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ToastAndroid, ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { app } from "../../firebaseConfig";
 import { Formik } from 'formik';
@@ -115,97 +115,100 @@ export default function AddProduct() {
   }
 
   return (
-    <View className="p-10">
-      <Text className="text-[20px] mt-6 font-bold text-[#3D3227]">Adicione um produto para venda:</Text>
-      <Text className="text-[14px] mt-2 mb-4 text-[#3D3227]">É simples e rápido, preencha as informações do seu produto</Text>
-      <Formik
-        initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:'', userName: '', userEmail:'', userImage:''}}
-        onSubmit={(values) => onSubmitMethod(values)}
-        validate={(values) => {
-          const errors={}
-          if(!values.title) {
-            errors.name = 'Digite um título'
-            ToastAndroid.show("Digite um título", ToastAndroid.SHORT);
-          }
-          return errors;
-        }}
-      >
-        {({handleChange, handleBlur, handleSubmit, values, setFieldValue, errors}) => (
-          <View className="mt-2">
-            <TouchableOpacity onPress={pickImage}>
-              {image?
-              <Image source={{uri: image}} className="w-20 h-20 mx-auto mb-6 rounded-lg"/>
-              :
-              <Image source={require('./../../assets/images/add_photo.png')} className="w-20 h-20 mx-auto mb-6" />}
-            </TouchableOpacity>
-            <TextInput 
-              style={styles.input}
-              placeholder='Título'
-              value={values?.title}
-              onChangeText={handleChange('title')}
-            />
-             <TextInput 
-              style={styles.input}
-              placeholder='Descrição'
-              value={values?.desc}
-              numberOfLines={5}
-              onChangeText={handleChange('desc')}
-            />
-            <View style={styles.priceView}>
-              <Text className="text-gray-600 pl-4">R$</Text>
+    <KeyboardAvoidingView>
+      <ScrollView className="p-10">
+        <Text className="text-[20px] mt-6 font-bold text-[#3D3227]">Adicione um produto para venda:</Text>
+        <Text className="text-[14px] mt-2 mb-4 text-[#3D3227]">É simples e rápido, preencha as informações do seu produto</Text>
+        <Formik
+          initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:'', userName: '', userEmail:'', userImage:''}}
+          onSubmit={(values) => onSubmitMethod(values)}
+          validate={(values) => {
+            const errors={}
+            if(!values.title) {
+              errors.name = 'Digite um título'
+              ToastAndroid.show("Digite um título", ToastAndroid.SHORT);
+            }
+            return errors;
+          }}
+        >
+          {({handleChange, handleBlur, handleSubmit, values, setFieldValue, errors}) => (
+            <View className="mt-2">
+              <TouchableOpacity onPress={pickImage}>
+                {image?
+                <Image source={{uri: image}} className="w-20 h-20 mx-auto mb-6 rounded-lg"/>
+                :
+                <Image source={require('./../../assets/images/add_photo.png')} className="w-20 h-20 mx-auto mb-6" />}
+              </TouchableOpacity>
               <TextInput 
-                style={styles.price}
-                placeholder='Preço'
-                value={values?.price}
-                keyboardType='number-pad'
-                onChangeText={handleChange('price')}
+                style={styles.input}
+                placeholder='Título'
+                value={values?.title}
+                onChangeText={handleChange('title')}
               />
+              <TextInput 
+                style={styles.input}
+                placeholder='Descrição'
+                value={values?.desc}
+                numberOfLines={5}
+                onChangeText={handleChange('desc')}
+              />
+              <View style={styles.priceView}>
+                <Text className="text-gray-600 pl-4">R$</Text>
+                <TextInput 
+                  style={styles.price}
+                  placeholder='Preço'
+                  value={values?.price}
+                  keyboardType='number-pad'
+                  onChangeText={handleChange('price')}
+                />
+                  <Picker
+                    style={styles.unit}
+                    selectedValue={values?.unit}
+                    onValueChange={itemValue => setFieldValue('unit', itemValue)}
+                  >
+                    {unitList&&unitList.map((unit, index) => (
+                      <Picker.Item key={index} label={unit?.name} value={unit?.name} />
+                    ))}
+                  </Picker>
+              </View>
+              <View style={styles.input}>
                 <Picker
-                  style={styles.unit}
-                  selectedValue={values?.unit}
-                  onValueChange={itemValue => setFieldValue('unit', itemValue)}
+                  selectedValue={values?.category}
+                  onValueChange={itemValue => setFieldValue('category', itemValue)}
                 >
-                  {unitList&&unitList.map((unit, index) => (
-                    <Picker.Item key={index} label={unit?.name} value={unit?.name} />
+                  <Picker.Item label="Selecione uma categoria" value="" />
+                  {categoryList&&categoryList.map((category, index) => (
+                    <Picker.Item key={index} label={category?.name} value={category?.name} />
                   ))}
                 </Picker>
+              </View>
+              <TextInput 
+                  style={styles.input}
+                  placeholder='Endereço'
+                  numberOfLines={3}
+                  value={values?.address}
+                  onChangeText={handleChange('address')}
+                />
+              <TouchableOpacity 
+                style={{backgroundColor: loading ? '#CCC' : '#A9CA5B'}}
+                disabled={loading}
+                className="p-4 rounded-lg mt-2 shadow-md" 
+                onPress={handleSubmit} >
+                {loading ? 
+                  <ActivityIndicator size="small" color="#fff" />
+                  :
+                  <Text className="text-white text-center text-[18px]">Adicionar</Text>
+                }
+              </TouchableOpacity>
             </View>
-            <View style={styles.input}>
-              <Picker
-                selectedValue={values?.category}
-                onValueChange={itemValue => setFieldValue('category', itemValue)}
-              >
-                <Picker.Item label="Selecione uma categoria" value="" />
-                {categoryList&&categoryList.map((category, index) => (
-                  <Picker.Item key={index} label={category?.name} value={category?.name} />
-                ))}
-              </Picker>
-            </View>
-            <TextInput 
-                style={styles.input}
-                placeholder='Endereço'
-                numberOfLines={3}
-                value={values?.address}
-                onChangeText={handleChange('address')}
-              />
-            <TouchableOpacity 
-              style={{backgroundColor: loading ? '#CCC' : '#A9CA5B'}}
-              disabled={loading}
-              className="p-4 rounded-lg mt-2 shadow-md" 
-              onPress={handleSubmit} >
-              {loading ? 
-                <ActivityIndicator size="small" color="#fff" />
-                :
-                <Text className="text-white text-center text-[18px]">Adicionar</Text>
-              }
-            </TouchableOpacity>
-          </View>
-        )}
-      </Formik>
-    </View>
+          )}
+        </Formik>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
+//Estilos
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
