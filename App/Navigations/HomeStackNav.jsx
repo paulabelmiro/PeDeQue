@@ -14,7 +14,16 @@ export default function HomeStackNav() {
             headerShown:false
         }}
       />
-      <Stack.Screen name="itemList" component={ItemList} />
+      <Stack.Screen name="itemList" 
+        component={ItemList}
+        options={({route})=>({
+          title:route.params.category,
+          headerStyle:{
+            backgroundColor:"#A9CA5B"
+          },
+          headerTintColor:"#fff",
+        })}
+      />
     </Stack.Navigator>
   )
 }
