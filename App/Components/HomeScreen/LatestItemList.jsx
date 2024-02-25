@@ -2,10 +2,10 @@ import { View, Text, FlatList } from 'react-native';
 import React from 'react';
 import ProductItem from './ProductItem';
 
-export default function LatestItemList({latestItemList}) {
+export default function LatestItemList({latestItemList, heading}) {
   return (
     <View className="mt-3 mb-10">
-      <Text className="text-[20px] text-[#3D3227] font-bold">Produtos Recentes</Text>
+      <Text className="text-[20px] text-[#3D3227] font-bold">{heading}</Text>
       <FlatList
         data={latestItemList}
         numColumns={2}

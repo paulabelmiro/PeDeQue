@@ -58,7 +58,7 @@ export default function Home() {
       <Header />
       <Slider slidersList={slidersList.sort((a, b) => a.index - b.index)} />
       <Categories categoryList={categoryList.sort((a, b) => a.index - b.index)}/>
-      <LatestItemList latestItemList={latestItemList}/>
+      <LatestItemList latestItemList={latestItemList} heading={'Produtos Recentes'}/>
     </ScrollView>
   )
 }
