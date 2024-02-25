@@ -3,7 +3,7 @@ import React from 'react'
 
 export default function Slider({slidersList}) {
   return (
-    <View className="mt-5">
+    <View className="mt-3">
       <FlatList 
       data={slidersList}
       horizontal={true}

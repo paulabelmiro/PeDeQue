@@ -120,7 +120,8 @@ export default function AddProduct() {
         <Text className="text-[20px] mt-6 font-bold text-[#3D3227]">Adicione um produto para venda:</Text>
         <Text className="text-[14px] mt-2 mb-4 text-[#3D3227]">É simples e rápido, preencha as informações do seu produto</Text>
         <Formik
-          initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:'', userName: '', userEmail:'', userImage:''}}
+          initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:'', userName: '', userEmail:'', 
+          userImage:'', createdAt: Date.now()}}
           onSubmit={(values) => onSubmitMethod(values)}
           validate={(values) => {
             const errors={}
@@ -132,7 +133,7 @@ export default function AddProduct() {
           }}
         >
           {({handleChange, handleBlur, handleSubmit, values, setFieldValue, errors}) => (
-            <View className="mt-2">
+            <View className="mt-2 mb-12">
               <TouchableOpacity onPress={pickImage}>
                 {image?
                 <Image source={{uri: image}} className="w-20 h-20 mx-auto mb-6 rounded-lg"/>

@@ -1,9 +1,10 @@
-import { View } from 'react-native';
+import { ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Header from '../Components/HomeScreen/Header';
 import Slider from '../Components/HomeScreen/Slider';
 import Categories from '../Components/HomeScreen/Categories';
-import { getFirestore, getDocs, collection } from 'firebase/firestore';
+import LatestItemList from '../Components/HomeScreen/LatestItemList';
+import { getFirestore, getDocs, collection, orderBy } from 'firebase/firestore';
 import { app } from "../../firebaseConfig";
 
 export default function Home() {
@@ -11,12 +12,14 @@ export default function Home() {
   //Inicializa o banco de dados
   const db = getFirestore(app);
 
-  //Inicializa a lista de sliders e categorias
+  //Inicializa a lista de sliders, categorias e Produtos
   const [slidersList, setSlidersList] = useState([]);
   const [categoryList, setCategoryList] = useState( [] );
+  const [latestItemList, setLatestItemList] = useState( [] );
   useEffect(() => {
     getSliders();
     getCategoryList();
+    getLatestItemList();
   }, []);
 
   /**
@@ -37,16 +40,25 @@ export default function Home() {
     setCategoryList([]);
     const querySnapshot = await getDocs(collection(db, 'Category'));
     querySnapshot.forEach((doc) => {
-        console.log("Docs:", doc.data());
         setCategoryList(categoryList => [...categoryList, doc.data()]);
+    })
+  }
+
+  const getLatestItemList = async () => {
+    setLatestItemList([]);
+    const querySnapshot = await getDocs(collection(db, 'Product'), orderBy('createdAt', 'desc'));
+    querySnapshot.forEach((doc) => {
+        console.log("Docs:", doc.data());
+        setLatestItemList(latestItemList => [...latestItemList, doc.data()]);
     })
   }
   
   return (
-    <View className="py-10 px-6">
+    <ScrollView className="py-8 px-6">
       <Header />
       <Slider slidersList={slidersList.sort((a, b) => a.index - b.index)} />
       <Categories categoryList={categoryList.sort((a, b) => a.index - b.index)}/>
-    </View>
+      <LatestItemList latestItemList={latestItemList}/>
+    </ScrollView>
   )
 }
