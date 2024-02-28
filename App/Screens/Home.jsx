@@ -48,7 +48,6 @@ export default function Home() {
     setLatestItemList([]);
     const querySnapshot = await getDocs(collection(db, 'Product'), orderBy('createdAt', 'desc'));
     querySnapshot.forEach((doc) => {
-        console.log("Docs:", doc.data());
         setLatestItemList(latestItemList => [...latestItemList, doc.data()]);
     })
   }

@@ -43,7 +43,6 @@ export default function AddProduct() {
     const querySnapshot = await getDocs(collection(db, 'Category'));
 
     querySnapshot.forEach((doc) => {
-        console.log("Docs:", doc.data());
         setCategoryList(categoryList => [...categoryList, doc.data()])
     })
   }
@@ -56,7 +55,6 @@ export default function AddProduct() {
     const querySnapshot = await getDocs(collection(db, 'Unit'));
 
     querySnapshot.forEach((doc) => {
-        console.log("Docs:", doc.data());
         setUnitList(unitList => [...unitList, doc.data()])
     })
   }

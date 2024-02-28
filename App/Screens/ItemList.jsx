@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { getFirestore, getDocs, collection, query, where } from 'firebase/firestore';
@@ -8,8 +8,14 @@ import { Ionicons } from '@expo/vector-icons';
 
 
 export default function ItemList() {
+  //Inicializa a rota
   const {params} = useRoute();
+
+  //Inicializa o banco de dados
   const db = getFirestore(app);
+
+  //Inicializa o estado de carregamento
+  const [loading, setLoading] = useState(false);
 
   //Inicializa a lista de produtos
   const [itemList, setItemList] = useState([]);
@@ -22,8 +28,10 @@ export default function ItemList() {
    */
   const getItemListByCategory = async () => {
     setItemList([]);
+    setLoading(true);
     const q = query(collection(db, 'Product'), where('category', '==', params.category));
     const querySnapshot = await getDocs(q);
+    setLoading(false);
     querySnapshot.forEach((doc) => {
       setItemList(itemList => [...itemList, doc.data()]);
     });
@@ -31,7 +39,10 @@ export default function ItemList() {
   
   return (
     <View className="p-2">
-      {itemList.length > 0 ? <LatestItemList latestItemList={itemList} 
+      {loading ? 
+        <ActivityIndicator size="large" color="#A9CA5B" className="mt-[160px]" />
+        :
+        itemList?.length > 0 ? <LatestItemList latestItemList={itemList} 
       heading={''} /> 
       : <View className="mt-[160px] p-10 items-center">
           <Ionicons name="sad-outline" size={48} color="#ccc" />
