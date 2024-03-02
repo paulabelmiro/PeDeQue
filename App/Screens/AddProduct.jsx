@@ -1,15 +1,27 @@
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ToastAndroid, ActivityIndicator, Alert, KeyboardAvoidingView, ScrollView } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Image,
+  ToastAndroid,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import { app } from "../../firebaseConfig";
-import { Formik } from 'formik';
-import {Picker} from '@react-native-picker/picker';
-import * as ImagePicker from 'expo-image-picker';
+import { Formik } from "formik";
+import { Picker } from "@react-native-picker/picker";
+import * as ImagePicker from "expo-image-picker";
 import { getFirestore, getDocs, collection, addDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useUser } from '@clerk/clerk-expo';
+import { useUser } from "@clerk/clerk-expo";
+import { useNavigation } from "@react-navigation/native";
 
 export default function AddProduct() {
-
   //Seta a imagem do produto
   const [image, setImage] = useState(null);
 
@@ -21,43 +33,46 @@ export default function AddProduct() {
   const [loading, setLoading] = useState(false);
 
   //Pega o usuário logado
-  const {user } = useUser();
-  
+  const { user } = useUser();
+
+  //Pega a navegação
+  const nav = useNavigation();
+
   //Inicializa as listas de categorias e unidades
-  const [categoryList, setCategoryList] = useState( [] );
-  const [unitList, setUnitList] = useState( [] );
+  const [categoryList, setCategoryList] = useState([]);
+  const [unitList, setUnitList] = useState([]);
 
   //Carrega as listas de categorias e unidades
   useEffect(() => {
-      getCategoryList();
+    getCategoryList();
   }, []);
   useEffect(() => {
-      getUnitList();
+    getUnitList();
   }, []);
 
   /**
-  * Carrega a lista de categorias
-  */
+   * Carrega a lista de categorias
+   */
   const getCategoryList = async () => {
     setCategoryList([]);
-    const querySnapshot = await getDocs(collection(db, 'Category'));
+    const querySnapshot = await getDocs(collection(db, "Category"));
 
     querySnapshot.forEach((doc) => {
-        setCategoryList(categoryList => [...categoryList, doc.data()])
-    })
-  }
+      setCategoryList((categoryList) => [...categoryList, doc.data()]);
+    });
+  };
 
   /**
    * Carrega a lista de unidades
    */
   const getUnitList = async () => {
     setUnitList([]);
-    const querySnapshot = await getDocs(collection(db, 'Unit'));
+    const querySnapshot = await getDocs(collection(db, "Unit"));
 
     querySnapshot.forEach((doc) => {
-        setUnitList(unitList => [...unitList, doc.data()])
-    })
-  }
+      setUnitList((unitList) => [...unitList, doc.data()]);
+    });
+  };
 
   /**
    * Carrega o seletor de imagem
@@ -79,132 +94,179 @@ export default function AddProduct() {
   };
 
   /**
-   * Método de submissão do formulário 
+   * Método de submissão do formulário
    */
   const onSubmitMethod = async (values) => {
-
     setLoading(true);
 
     //Converte Uri para Blob File
     const response = await fetch(image);
     const blob = await response.blob();
-    const storageRef = ref(storage, 'ProductPost/' + Date.now() + '.jpg');
+    const storageRef = ref(storage, "ProductPost/" + Date.now() + ".jpg");
 
     //Faz o upload da imagem
-    uploadBytes(storageRef, blob).then((snapshot) => {
-      console.log('Uploaded a blob or file!');
-    }).then((response) => {
-
-      //Pega a URL da imagem e seta os valores da imagem e do usuário
-      getDownloadURL(storageRef).then( async (url) => {
-        values.image = url;
-        values.userName = user.fullName;
-        values.userEmail = user.primaryEmailAddress.emailAddress;
-        values.userImage = user.imageUrl;
-
-        //Adiciona o produto no banco de dados
-        const docRef = await addDoc(collection(db, "Product"), values);
-        if(docRef.id) {
-          setLoading(false);
-          Alert.alert("Sucesso!", "Produto adicionado com sucesso!!");
-        }
+    uploadBytes(storageRef, blob)
+      .then((snapshot) => {
+        console.log("Uploaded a blob or file!");
       })
-    });
-  }
+      .then((response) => {
+        //Pega a URL da imagem e seta os valores da imagem e do usuário
+        getDownloadURL(storageRef).then(async (url) => {
+          values.image = url;
+          values.userName = user.fullName;
+          values.userEmail = user.primaryEmailAddress.emailAddress;
+          values.userImage = user.imageUrl;
+
+          //Adiciona o produto no banco de dados
+          const docRef = await addDoc(collection(db, "Product"), values);
+          if (docRef.id) {
+            setLoading(false);
+            Alert.alert("Sucesso!", "Produto adicionado com sucesso!!");
+            nav.goBack();
+          }
+        });
+      });
+  };
 
   return (
     <KeyboardAvoidingView>
       <ScrollView className="p-10">
-        <Text className="text-[20px] mt-6 font-bold text-[#3D3227]">Adicione um produto para venda:</Text>
-        <Text className="text-[14px] mt-2 mb-4 text-[#3D3227]">É simples e rápido, preencha as informações do seu produto</Text>
+        <Text className="text-[20px] mt-6 font-bold text-[#3D3227]">
+          Adicione um produto para venda:
+        </Text>
+        <Text className="text-[14px] mt-2 mb-4 text-[#3D3227]">
+          É simples e rápido, preencha as informações do seu produto
+        </Text>
         <Formik
-          initialValues={{ title: '', desc: '', category: '', address:'', price:'', unit:'', image:'', userName: '', userEmail:'', 
-          userImage:'', createdAt: Date.now()}}
+          initialValues={{
+            title: "",
+            desc: "",
+            category: "",
+            address: "",
+            price: "",
+            unit: "",
+            image: "",
+            userName: "",
+            userEmail: "",
+            userImage: "",
+            createdAt: Date.now(),
+          }}
           onSubmit={(values) => onSubmitMethod(values)}
-          validate={(values) => {
-            const errors={}
-            if(!values.title) {
-              errors.name = 'Digite um título'
+          /*validate={(values) => {
+            const errors = {};
+            if (!values.title) {
+              errors.name = "Digite um título";
               ToastAndroid.show("Digite um título", ToastAndroid.SHORT);
             }
             return errors;
-          }}
+          }}*/
         >
-          {({handleChange, handleBlur, handleSubmit, values, setFieldValue, errors}) => (
+          {({
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            values,
+            setFieldValue,
+            errors,
+          }) => (
             <View className="mt-2 mb-12">
               <TouchableOpacity onPress={pickImage}>
-                {image?
-                <Image source={{uri: image}} className="w-20 h-20 mx-auto mb-6 rounded-lg"/>
-                :
-                <Image source={require('./../../assets/images/add_photo.png')} className="w-20 h-20 mx-auto mb-6" />}
+                {image ? (
+                  <Image
+                    source={{ uri: image }}
+                    className="w-20 h-20 mx-auto mb-6 rounded-lg"
+                  />
+                ) : (
+                  <Image
+                    source={require("./../../assets/images/add_photo.png")}
+                    className="w-20 h-20 mx-auto mb-6"
+                  />
+                )}
               </TouchableOpacity>
-              <TextInput 
+              <TextInput
                 style={styles.input}
-                placeholder='Título'
+                placeholder="Título"
                 value={values?.title}
-                onChangeText={handleChange('title')}
+                onChangeText={handleChange("title")}
               />
-              <TextInput 
+              <TextInput
                 style={styles.input}
-                placeholder='Descrição'
+                placeholder="Descrição"
                 value={values?.desc}
                 numberOfLines={5}
-                onChangeText={handleChange('desc')}
+                onChangeText={handleChange("desc")}
               />
               <View style={styles.priceView}>
                 <Text className="text-gray-600 pl-4">R$</Text>
-                <TextInput 
+                <TextInput
                   style={styles.price}
-                  placeholder='Preço'
+                  placeholder="Preço"
                   value={values?.price}
-                  keyboardType='number-pad'
-                  onChangeText={handleChange('price')}
+                  keyboardType="number-pad"
+                  onChangeText={handleChange("price")}
                 />
-                  <Picker
-                    style={styles.unit}
-                    selectedValue={values?.unit}
-                    onValueChange={itemValue => setFieldValue('unit', itemValue)}
-                  >
-                    {unitList&&unitList.map((unit, index) => (
-                      <Picker.Item key={index} label={unit?.name} value={unit?.name} />
+                <Picker
+                  style={styles.unit}
+                  selectedValue={values?.unit}
+                  onValueChange={(itemValue) =>
+                    setFieldValue("unit", itemValue)
+                  }
+                >
+                  {unitList &&
+                    unitList.map((unit, index) => (
+                      <Picker.Item
+                        key={index}
+                        label={unit?.name}
+                        value={unit?.name}
+                      />
                     ))}
-                  </Picker>
+                </Picker>
               </View>
               <View style={styles.input}>
                 <Picker
                   selectedValue={values?.category}
-                  onValueChange={itemValue => setFieldValue('category', itemValue)}
+                  onValueChange={(itemValue) =>
+                    setFieldValue("category", itemValue)
+                  }
                 >
                   <Picker.Item label="Selecione uma categoria" value="" />
-                  {categoryList&&categoryList.map((category, index) => (
-                    <Picker.Item key={index} label={category?.name} value={category?.name} />
-                  ))}
+                  {categoryList &&
+                    categoryList.map((category, index) => (
+                      <Picker.Item
+                        key={index}
+                        label={category?.name}
+                        value={category?.name}
+                      />
+                    ))}
                 </Picker>
               </View>
-              <TextInput 
-                  style={styles.input}
-                  placeholder='Endereço'
-                  numberOfLines={3}
-                  value={values?.address}
-                  onChangeText={handleChange('address')}
-                />
-              <TouchableOpacity 
-                style={{backgroundColor: loading ? '#CCC' : '#A9CA5B'}}
+              <TextInput
+                style={styles.input}
+                placeholder="Endereço"
+                numberOfLines={3}
+                value={values?.address}
+                onChangeText={handleChange("address")}
+              />
+              <TouchableOpacity
+                style={{ backgroundColor: loading ? "#CCC" : "#A9CA5B" }}
                 disabled={loading}
-                className="p-4 rounded-lg mt-2 shadow-md" 
-                onPress={handleSubmit} >
-                {loading ? 
+                className="p-4 rounded-lg mt-2 shadow-md"
+                onPress={handleSubmit}
+              >
+                {loading ? (
                   <ActivityIndicator size="small" color="#fff" />
-                  :
-                  <Text className="text-white text-center text-[18px]">Adicionar</Text>
-                }
+                ) : (
+                  <Text className="text-white text-center text-[18px]">
+                    Adicionar
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           )}
         </Formik>
       </ScrollView>
     </KeyboardAvoidingView>
-  )
+  );
 }
 
 //Estilos
@@ -216,12 +278,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     fontSize: 17,
     marginBottom: 5,
-    textAlignVertical: 'top'
+    textAlignVertical: "top",
   },
   priceView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderWidth: 1,
     borderRadius: 10,
     marginBottom: 5,
@@ -232,9 +294,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     marginBottom: 5,
     marginTop: 10,
-    width: '50%'
+    width: "50%",
   },
   unit: {
-    width: '40%'
-  }
-})
+    width: "40%",
+  },
+});

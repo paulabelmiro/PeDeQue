@@ -25,6 +25,7 @@ export default function ProductDetail({ navigation }) {
   //Inicializa o banco de dados
   const db = getFirestore(app);
 
+  //Pega a navegação
   const nav = useNavigation();
 
   //Inicializa o produto
