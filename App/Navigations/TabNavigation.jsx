@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeStackNav from './HomeStackNav'; 
 import AddProduct from '../Screens/AddProduct';
 import ExploreStackNav from './ExploreStackNav';
-import Profile from '../Screens/Profile';
+import ProfileStackNav from './ProfileStackNav';
 import { Ionicons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
@@ -45,7 +45,7 @@ export default function TabNavigation() {
           )
         }}
         />
-        <Tab.Screen name="profile" component={Profile}
+        <Tab.Screen name="profile" component={ProfileStackNav}
         options={{
           tabBarLabel:({color})=>(
             <Text style={{color:color, fontSize:12, marginBottom:3}}>Perfil</Text>

@@ -2,10 +2,12 @@ import { View, Text, Image, FlatList, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useUser } from '@clerk/clerk-expo';
 import { AntDesign } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Profile() {
 
   const { user } = useUser();
+  const navigation = useNavigation();
 
   const menuList = [
     {
@@ -17,6 +19,7 @@ export default function Profile() {
       id: 2,
       name: "Meus produtos",
       icon: "tags",
+      path: "myProducts"
     },
         {
       id: 3,
@@ -31,6 +34,12 @@ export default function Profile() {
 
   ]
 
+  const onMenuPress = (item) => {
+    item?.path ?
+    navigation.navigate(item?.path)
+    : null
+  }
+
   return (
     <View className="p-5 flex-1">
       <View className="items-center mt-20">
@@ -42,7 +51,9 @@ export default function Profile() {
         <FlatList 
         data={menuList}
         renderItem={({item, index})=>(
-          <TouchableOpacity className="flex flex-row items-center gap-6 p-4">
+          <TouchableOpacity 
+          onPress={()=> onMenuPress(item)}
+          className="flex flex-row items-center gap-6 p-4">
             <AntDesign name={item?.icon} size={24} color="#A9CA5B" />
             <Text className="text-xl text-[#3D3227] text-left">{item?.name}</Text>
           </TouchableOpacity>
