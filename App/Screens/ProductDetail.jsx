@@ -32,6 +32,8 @@ export default function ProductDetail({ navigation }) {
   const [product, setProduct] = useState([]);
   useEffect(() => {
     params && setProduct(params.product);
+    console.log(params);
+    console.log(product);
     shareButton();
   }, [params, navigation]);
 
@@ -142,18 +144,22 @@ export default function ProductDetail({ navigation }) {
           R$ {product?.price} {product?.unit}{" "}
         </Text>
         {user?.primaryEmailAddress?.emailAddress === product?.userEmail ? (
-          <TouchableOpacity
-            className="items-center"
-            onPress={() => deleteUserProduct()}
-          >
-            <Fontisto name="close" size={16} color="white" />
-            <Text className="text-white font-bold py-1 text-center text-xs">
-              Excluir
-            </Text>
-          </TouchableOpacity>
+          <View className="flex flex-row items-center gap-8">
+            <TouchableOpacity
+              className="items-center"
+              onPress={() => deleteUserProduct()}
+            >
+              <Fontisto name="close" size={24} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity className="items-center">
+              <Fontisto name="history" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
         ) : (
-          <TouchableOpacity>
-            <Fontisto name="shopping-basket-add" size={24} color="white" />
+          <TouchableOpacity
+            onPress={() => nav.push("productMessage", { product: product })}
+          >
+            <Fontisto name="comment" size={24} color="white" />
           </TouchableOpacity>
         )}
       </View>
